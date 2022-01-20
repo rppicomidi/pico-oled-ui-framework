@@ -136,3 +136,75 @@ draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state 
 		}
     }
 }
+
+template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
+void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
+circle_points(int cx, int cy, int x, int y, Pixel_state fg_color, Pixel_state fill_color)
+{
+	if (x == 0) {
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy + y, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy - y, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy, fg_color);
+		draw_line(cx-y+1,cy, cx+y-1, cy, fill_color);
+	}
+	else if (x == y) {
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
+		draw_line(cx-x+1,cy+y, cx+x-1, cy+y, fill_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
+		draw_line(cx-x+1,cy-y, cx+x-1, cy-y, fill_color);
+	}
+	else if (x < y) {
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
+		draw_line(cx-x+1,cy+y, cx+x-1, cy+y, fill_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
+		draw_line(cx-x+1,cy-y, cx+x-1, cy-y, fill_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy + x, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy + x, fg_color);
+		draw_line(cx-y+1,cy+x, cx+y-1, cy+x, fill_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy - x, fg_color);
+		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy - x, fg_color);
+		draw_line(cx-y+1,cy-x, cx+y-1, cy-x, fill_color);
+	}
+}
+
+template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
+void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
+draw_circle(uint8_t x0, uint8_t y0, uint8_t diameter, Pixel_state fg_color, Pixel_state fill_color)
+{
+	int radius = diameter / 2;
+	int x_center = x0 + radius;
+	int y_center = y0 + radius;
+	draw_centered_circle(x_center, y_center, radius, fg_color, fill_color);
+}
+
+template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
+void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
+draw_centered_circle(uint8_t x_center, uint8_t y_center, uint8_t radius, Pixel_state fg_color, Pixel_state fill_color)
+{
+	int x = 0;
+	int y = radius;
+	int p = (5 - radius*4)/4;
+
+	circle_points(x_center, y_center, x, y, fg_color, fill_color);
+	while (x < y) {
+		x++;
+		if (p < 0) {
+			p += 2*x+1;
+		} else {
+			y--;
+			p += 2*(x-y)+1;
+		}
+		circle_points(x_center, y_center, x, y, fg_color, fill_color);
+	}
+	if (fill_color == Pixel_state::PIXEL_TRANSPARENT) {
+		radius = 0;
+	}
+	else {
+		--radius;
+	}
+}

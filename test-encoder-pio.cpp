@@ -37,7 +37,8 @@ int main()
     #if 1
     //screen.draw_string(font, 0, 0, "Hello!", 6, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ZERO);
     //screen.draw_line(32,32, 32, 127,Pixel_state::PIXEL_ONE);
-    screen.draw_rectangle(10,30, 20, 50, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
+    //screen.draw_rectangle(10,30, 20, 50, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
+    screen.draw_circle(16,16,32, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_TRANSPARENT);
     #else
     for (uint8_t xy=0; xy<64; xy++)
         screen.draw_dot(xy,xy,Pixel_state::PIXEL_ONE);

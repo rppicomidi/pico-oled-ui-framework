@@ -103,6 +103,37 @@ public:
     void draw_rectangle(uint8_t x0, uint8_t y0, uint8_t width, uint8_t height, Pixel_state fg_color, Pixel_state bg_color);
 
     /**
+     * @brief draw a circle with upper left corner at (x0,y0) and the given diameter
+     * using the writing mode described by fg_color and fill_color.
+     * 
+     * This function translates coordinates and calls draw_centered_circle(). See that
+     * function for license comments.
+     * 
+     * @param x0 the horizontal coordiate of the upper left corner of the circle's square bounding box
+     * @param y0 the vertical coordiate of the upper left corner of the circle's square bounding box
+     * @param diameter is the circle diameter. The circle radius has to be an integer
+     * number of pixels, so if diameter is odd, the radius will be smaller than expected.
+     * @param fg_color is how to draw the pixel outside the circle
+     * @param fill_color is how to draw the inside of the circle
+     */
+    void draw_circle(uint8_t x0, uint8_t y0, uint8_t diameter, Pixel_state fg_color, Pixel_state fill_color=Pixel_state::PIXEL_TRANSPARENT);
+
+    /**
+     * @brief draw a circle with center at (x_center, y_center) and the given radius
+     * using the writing mode described by fg_color and fill_color.
+     * 
+     * This algorithm taken from https://groups.csail.mit.edu/graphics/classes/6.837/F98/Lecture6/circle.html
+     * License for this function is not known. I modified the it to support filled circles too.
+     * 
+     * @param x_center the horizontal coordiate of the circle's center
+     * @param y_center the vertical coordiate of the circle's center
+     * @param radius is the circle's radius.
+     * @param fg_color is how to draw the pixel outside the circle
+     * @param fill_color is how to draw the inside of the circle
+     */
+    void draw_centered_circle(uint8_t x_center, uint8_t y_center, uint8_t radius, Pixel_state fg_color, Pixel_state fill_color=Pixel_state::PIXEL_TRANSPARENT);
+
+    /**
      * @brief draw a single character to the screen based on the pixel_state.
      * 
      * @param font the font object to use when drawing the character
@@ -143,6 +174,7 @@ private:
     Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance> display;
     uint8_t* canvas;
     size_t canvas_nbytes;
+    void circle_points(int cx, int cy, int x, int y, Pixel_state bg_color, Pixel_state fill_color);
 };
 
 }
