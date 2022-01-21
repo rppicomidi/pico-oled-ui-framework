@@ -36,23 +36,23 @@
 #include "hardware/i2c.h"
 #include "hardware/gpio.h"
 #include "pico/binary_info.h"
-#include "i2c_ssd1306.h"
+#include "ssd1306i2c.h"
 #include "pico/assert.h"
 #include "pico/timeout_helper.h"
 
 
-rppicomidi::I2c_ssd1306::I2c_ssd1306(ConstructorArgs& args) :
-    i2c_port{args.i2c_port.i2c_port}, i2c_addr{args.i2c_addr}
+rppicomidi::Ssd1306i2c::Ssd1306i2c(i2c_inst_t* i2c_port_, uint8_t i2c_addr_, uint8_t sda_gpio_, uint8_t scl_gpio_) :
+    i2c_port{i2c_port_}, i2c_addr{i2c_addr_}
 {
     i2c_init(i2c_port, 400000); // todo: do we need to make the i2c bit rate an argument?
-    gpio_set_function(args.sda_gpio, GPIO_FUNC_I2C);
-    gpio_set_function(args.scl_gpio, GPIO_FUNC_I2C);
-    gpio_pull_up(args.sda_gpio);
-    gpio_pull_up(args.scl_gpio);
-    //bi_decl(bi_2pins_with_func(args.sda_gpio, args.scl_gpio, GPIO_FUNC_I2C));
+    gpio_set_function(sda_gpio_, GPIO_FUNC_I2C);
+    gpio_set_function(scl_gpio_, GPIO_FUNC_I2C);
+    gpio_pull_up(sda_gpio_);
+    gpio_pull_up(scl_gpio_);
+    //bi_decl(bi_2pins_with_func(sda_gpio_, scl_gpio_, GPIO_FUNC_I2C));
 }
 
-bool rppicomidi::I2c_ssd1306::write_command(const uint8_t* command_bytes, uint8_t nbytes)
+bool rppicomidi::Ssd1306i2c::write_command(const uint8_t* command_bytes, uint8_t nbytes)
 {
     assert(command_bytes);
     assert(nbytes);
@@ -61,7 +61,7 @@ bool rppicomidi::I2c_ssd1306::write_command(const uint8_t* command_bytes, uint8_
     return success;
 }
 
-bool rppicomidi::I2c_ssd1306::write_data(const uint8_t* data, size_t nbytes)
+bool rppicomidi::Ssd1306i2c::write_data(const uint8_t* data, size_t nbytes)
 {
     assert(data);
     assert(nbytes);
@@ -69,7 +69,7 @@ bool rppicomidi::I2c_ssd1306::write_data(const uint8_t* data, size_t nbytes)
 }
 
 // The following method slightly modified from the pico-sdk's i2c_write_blocking_internal function
-int rppicomidi::I2c_ssd1306::write_blocking_internal(i2c_inst_t *i2c, uint8_t addr, uint8_t regbyte, const uint8_t *src, size_t len, bool nostop,
+int rppicomidi::Ssd1306i2c::write_blocking_internal(i2c_inst_t *i2c, uint8_t addr, uint8_t regbyte, const uint8_t *src, size_t len, bool nostop,
                                        check_timeout_fn timeout_check, struct timeout_state *ts) {
     invalid_params_if(I2C, addr >= 0x80); // 7-bit addresses
     invalid_params_if(I2C, i2c_reserved_addr(addr));

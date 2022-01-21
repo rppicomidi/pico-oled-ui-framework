@@ -1,5 +1,5 @@
 /**
- * @file ssd1306_common.h
+ * @file mono_graphics_lib.cpp
  * @brief This class is a C++ Raspberry Pi Pico port of the LibDriver 
  * C SSD1306 driver code found here: https://github.com/hepingood/ssd1306
  * 
@@ -26,31 +26,26 @@
  * SOFTWARE.
  */
 
-#pragma once
 #include <cstdlib>
 #include <cstring>
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-Mono_graphics(rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>& display_, Display_rotation initial_rotation_) :
+#include "mono_graphics_lib.h"
+
+rppicomidi::Mono_graphics::Mono_graphics(rppicomidi::Ssd1306* display_, Display_rotation initial_rotation_) :
     display{display_}
 {
-    canvas_nbytes = display.get_minimum_canvas_size();
+    canvas_nbytes = display->get_minimum_canvas_size();
     canvas = reinterpret_cast<uint8_t*>(malloc(canvas_nbytes));
     memset(canvas, 0, canvas_nbytes);
     assert(canvas);
-    display.init(initial_rotation_);
+    display->init(initial_rotation_);
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-draw_dot(uint8_t x, uint8_t y, Pixel_state fg_color)
+void rppicomidi::Mono_graphics::draw_dot(uint8_t x, uint8_t y, Pixel_state fg_color)
 {
-    display.set_pixel_on_canvas(canvas, canvas_nbytes, x, y, fg_color);
+    display->set_pixel_on_canvas(canvas, canvas_nbytes, x, y, fg_color);
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, Pixel_state fg_color)
+void rppicomidi::Mono_graphics::draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, Pixel_state fg_color)
 {
 	// Uses Bresenham's line algorithm as described in Wikipedia
 	int dx = abs(x1-x0);
@@ -59,7 +54,7 @@ draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, Pixel_state fg_color)
 	int sy = (y0<y1) ? 1 : -1;
 	int err = dx+dy; // error value e_xy
 	while(true) {
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, x0, y0, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, x0, y0, fg_color);
 		if (x0 == x1 && y0 == y1) {
 			break; //done
 		}
@@ -75,9 +70,7 @@ draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, Pixel_state fg_color)
 	}
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-draw_rectangle(uint8_t x0, uint8_t y0, uint8_t width, uint8_t height, Pixel_state fg_color, Pixel_state bg_color)
+void rppicomidi::Mono_graphics::draw_rectangle(uint8_t x0, uint8_t y0, uint8_t width, uint8_t height, Pixel_state fg_color, Pixel_state bg_color)
 {
 	uint8_t x1 = x0 + width - 1;
 	uint8_t y1 = y0 + height - 1;
@@ -97,9 +90,7 @@ draw_rectangle(uint8_t x0, uint8_t y0, uint8_t width, uint8_t height, Pixel_stat
 	}
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state fg_color, Pixel_state bg_color)
+void rppicomidi::Mono_graphics::draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state fg_color, Pixel_state bg_color)
 {
 	assert(chr <= font.last_char && chr >= font.first_char);
 
@@ -117,7 +108,7 @@ draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state 
 		uint8_t ypixel = y;
 		uint8_t column_byte = 0;
 		for (uint8_t row = 0; row < nrows; row++) {
-			display.set_pixel_on_canvas(canvas, canvas_nbytes, xpixel, ypixel, (rowbits & mask)!= 0 ? fg_color : bg_color);
+			display->set_pixel_on_canvas(canvas, canvas_nbytes, xpixel, ypixel, (rowbits & mask)!= 0 ? fg_color : bg_color);
             if (font.msb_is_top)
 			    mask >>= 1;
             else
@@ -137,44 +128,40 @@ draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state 
     }
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-circle_points(int cx, int cy, int x, int y, Pixel_state fg_color, Pixel_state fill_color)
+void rppicomidi::Mono_graphics::circle_points(int cx, int cy, int x, int y, Pixel_state fg_color, Pixel_state fill_color)
 {
 	if (x == 0) {
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy + y, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy - y, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy + y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy - y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy, fg_color);
 		draw_line(cx-y+1,cy, cx+y-1, cy, fill_color);
 	}
 	else if (x == y) {
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
 		draw_line(cx-x+1,cy+y, cx+x-1, cy+y, fill_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
 		draw_line(cx-x+1,cy-y, cx+x-1, cy-y, fill_color);
 	}
 	else if (x < y) {
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
 		draw_line(cx-x+1,cy+y, cx+x-1, cy+y, fill_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
 		draw_line(cx-x+1,cy-y, cx+x-1, cy-y, fill_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy + x, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy + x, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy + x, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy + x, fg_color);
 		draw_line(cx-y+1,cy+x, cx+y-1, cy+x, fill_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy - x, fg_color);
-		display.set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy - x, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy - x, fg_color);
+		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy - x, fg_color);
 		draw_line(cx-y+1,cy-x, cx+y-1, cy-x, fill_color);
 	}
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-draw_circle(uint8_t x0, uint8_t y0, uint8_t diameter, Pixel_state fg_color, Pixel_state fill_color)
+void rppicomidi::Mono_graphics::draw_circle(uint8_t x0, uint8_t y0, uint8_t diameter, Pixel_state fg_color, Pixel_state fill_color)
 {
 	int radius = diameter / 2;
 	int x_center = x0 + radius;
@@ -182,9 +169,7 @@ draw_circle(uint8_t x0, uint8_t y0, uint8_t diameter, Pixel_state fg_color, Pixe
 	draw_centered_circle(x_center, y_center, radius, fg_color, fill_color);
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Mono_graphics<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-draw_centered_circle(uint8_t x_center, uint8_t y_center, uint8_t radius, Pixel_state fg_color, Pixel_state fill_color)
+void rppicomidi::Mono_graphics::draw_centered_circle(uint8_t x_center, uint8_t y_center, uint8_t radius, Pixel_state fg_color, Pixel_state fill_color)
 {
 	int x = 0;
 	int y = radius;

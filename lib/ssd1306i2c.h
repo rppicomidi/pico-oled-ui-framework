@@ -36,25 +36,20 @@
 #include <cstdint>
 #include "hardware/i2c.h"
 #include "pico/timeout_helper.h"
-
+#include "ssd1306hw.h"
 namespace rppicomidi {
-class I2c_ssd1306 {
+class Ssd1306i2c : public Ssd1306hw
+{
 public:
-    struct InterfaceInstance {
-        i2c_inst_t* i2c_port;
-    };
-    struct ConstructorArgs {
-        InterfaceInstance i2c_port; //the hardware handle for the I2C port in a struct
-        uint8_t i2c_addr;   //the I2C address of the display
-        uint8_t sda_gpio;   //the GPIO number of the I2C SDA signal
-        uint8_t scl_gpio;   //the GPIO number of the I2C SCL signal
-    };
     /**
      * @brief Construct a new i2c ssd1306 object
      * 
-     * @param args; // the arguments to this constructor in a single structure
+     * @param i2c_port the hardware handle for the I2C port in a struct
+     * @param i2c_addr the I2C address of the display
+     * @param sda_gpio the GPIO number of the I2C SDA signal
+     * @param scl_gpio //the GPIO number of the I2C SCL signal
      */
-    I2c_ssd1306(ConstructorArgs& args);
+    Ssd1306i2c(i2c_inst_t* i2c_port, uint8_t i2c_addr, uint8_t sda_gpio, uint8_t scl_gpio);
 
     /**
      * @brief Write a command byte followed by 0 or more argument bytes to the SSD1306
@@ -64,7 +59,7 @@ public:
      * @return true if the write was successful
      * @return false if the write failed
      */
-    bool write_command(const uint8_t* command, uint8_t nbytes);
+    bool write_command(const uint8_t* command, uint8_t nbytes) final;
 
     /**
      * @brief Write display memory bytes to the SSD1306
@@ -74,7 +69,7 @@ public:
      * @return true if the write was successful
      * @return false if the write failed
      */
-    bool write_data(const uint8_t* data, size_t nbytes);
+    bool write_data(const uint8_t* data, size_t nbytes) final;
 private:
     i2c_inst_t* i2c_port;
     uint8_t i2c_addr;

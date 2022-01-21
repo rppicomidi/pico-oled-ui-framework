@@ -1,5 +1,5 @@
 /**
- * @file ssd1306_common.h
+ * @file ssd1306.h
  * @brief This class is a C++ Raspberry Pi Pico port of the LibDriver 
  * C SSD1306 driver code found here: https://github.com/hepingood/ssd1306
  * 
@@ -60,6 +60,8 @@
  */
 #pragma once
 #include <cstdint>
+#include <cstring>
+#include "ssd1306hw.h"
 namespace rppicomidi {
 /**
  * @brief Describes the orientation of the display
@@ -90,19 +92,19 @@ enum class Pixel_state {
     PIXEL_TRANSPARENT, //!< don't change the memory bit
 };
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-class Ssd1306_common : protected HwInterfaceClass {
+
+class Ssd1306 {
 public:
     /**
      * @brief Construct a new Ssd1306_common object
      * 
-     * @param args The physicial interface dependent arguments structure
+     * @param port_ The physicial interface for writing commands and data
      * @param landscape_x_max_ the number of horizontal pixels if the screen is in landscape mode
      * @param landscape_y_max_ the number of vertical pixels if the screen is in landscape mode
      * @param first_column_ the first display RAM column number for a non-rotated display
      * @param first_page_  the first display RAM page number for a non-rotated display
      */
-    Ssd1306_common(HwInterfaceClassConstructorArgs& args, uint8_t landscape_x_max_ = 128, uint8_t landscape_y_max_=64, uint8_t first_column_=0, uint8_t first_page_=0);
+    Ssd1306(Ssd1306hw* port_, uint8_t landscape_x_max_ = 128, uint8_t landscape_y_max_=64, uint8_t first_column_=0, uint8_t first_page_=0);
 
     //-----------------------------------------------------------------------------
     // Class API interface functions
@@ -202,6 +204,7 @@ public:
 
     inline size_t get_minimum_canvas_size() {return num_pages * landscape_width; }
 private:
+    Ssd1306hw* port;
     uint8_t landscape_width;
     uint8_t landscape_height;
     uint8_t first_column;
@@ -214,5 +217,3 @@ private:
     bool write_command_list(const uint8_t* cmd_list, size_t cmd_list_len);
 };
 }
-
-#include "ssd1306_common_impl.h"

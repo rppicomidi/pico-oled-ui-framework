@@ -16,21 +16,20 @@
 #define PINB 3
 #define PIN_PRESS 4
 
-#include "i2c_ssd1306.h"
-#include "ssd1306_common.h"
 #include "mono_graphics_lib.h"
+#include "ssd1306i2c.h"
+#include "ssd1306.h"
 #include "ext_lib/ssd1306/src/driver_ssd1306_font.h"
 int main()
 {
     using namespace rppicomidi;
     stdio_init_all();
 
-    I2c_ssd1306::InterfaceInstance i2c_port = {i2c1};
-    I2c_ssd1306::ConstructorArgs i2c_args = {
-        i2c_port, 0x3c, 2, 3};
-    Ssd1306_common<I2c_ssd1306, I2c_ssd1306::ConstructorArgs, I2c_ssd1306::InterfaceInstance> ssd1306(i2c_args);
+    Ssd1306i2c i2c_driver{i2c1, 0x3c, 2, 3};
 
-    Mono_graphics<I2c_ssd1306, I2c_ssd1306::ConstructorArgs, I2c_ssd1306::InterfaceInstance> screen(ssd1306, Display_rotation::Portrait270);
+    Ssd1306 ssd1306(&i2c_driver);
+
+    Mono_graphics screen(&ssd1306, Display_rotation::Portrait270);
 
     MonoMonoFont font(12, 6, gsc_ssd1306_ascii_1206, sizeof(gsc_ssd1306_ascii_1206));
 
@@ -38,7 +37,7 @@ int main()
     //screen.draw_string(font, 0, 0, "Hello!", 6, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ZERO);
     //screen.draw_line(32,32, 32, 127,Pixel_state::PIXEL_ONE);
     //screen.draw_rectangle(10,30, 20, 50, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
-    screen.draw_circle(16,16,32, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_TRANSPARENT);
+    screen.draw_circle(16,16,32, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
     #else
     for (uint8_t xy=0; xy<64; xy++)
         screen.draw_dot(xy,xy,Pixel_state::PIXEL_ONE);

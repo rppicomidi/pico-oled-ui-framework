@@ -31,7 +31,8 @@
 #pragma once
 #include <cstdint>
 #include <cstring>
-#include "ssd1306_common.h"
+#include "ssd1306.h"
+#include "assert.h"
 namespace rppicomidi {
 
 /**
@@ -67,7 +68,6 @@ public:
     bool msb_is_top;        //!< see description above
 };
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
 class Mono_graphics 
 {
 public:
@@ -76,7 +76,7 @@ public:
      * 
      * @param display the interface to the display
      */
-    Mono_graphics(Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>& display_, Display_rotation initial_rotation_);
+    Mono_graphics(Ssd1306* display_, Display_rotation initial_rotation_);
 
     /**
      * @brief draw a single dot on the screen at raster coordinates (x,y)
@@ -167,16 +167,14 @@ public:
     }
 
     inline bool render() {
-        return display.write_display_mem(canvas, canvas_nbytes);
+        return display->write_display_mem(canvas, canvas_nbytes);
     }
-    Display_rotation get_display_rotation() {return display.get_display_rotation(); }
+    Display_rotation get_display_rotation() {return display->get_display_rotation(); }
 private:
-    Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance> display;
+    Ssd1306* display;
     uint8_t* canvas;
     size_t canvas_nbytes;
     void circle_points(int cx, int cy, int x, int y, Pixel_state bg_color, Pixel_state fill_color);
 };
 
 }
-
-#include "mono_graphics_lib_impl.h"

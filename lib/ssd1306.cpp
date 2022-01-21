@@ -1,12 +1,9 @@
 /**
- * @file ssd1306_common_impl.h
- * @brief see ssd1306_common.h for a description
- * 
- * This file is implemented as a header file instead of a .cpp file because
- * it contains template implementation functions.
- * 
+ * @file ssd1306.cpp
+ * @brief see ssd1306.h for a description
+ *
  * Copyright (c) 2022 rppicomid
- * 
+ *
  * The MIT License (MIT)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,9 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma once
-#include "ssd1306_common.h"
 
+#include "ssd1306.h"
+#include "assert.h"
 // From the SSD1306 datasheet
 #define SET_MEM_ADDR_MODE 0x20 /* follow this byte by one of the following values */
 #define ADDR_MODE_HORIZONTAL 0
@@ -73,18 +70,15 @@
 #define SET_CHARGE_PUMP 0x8D /* follow this command by one byte described by the macro below */
 #define CHARGE_PUMP_CTRL(enable) ((enable)?0x14:0x10)
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-Ssd1306_common(HwInterfaceClassConstructorArgs& args, uint8_t landscape_width_, uint8_t landscape_height_, uint8_t first_column_, uint8_t first_page_)
-: HwInterfaceClass{args}, landscape_width{landscape_width_}, landscape_height{landscape_height_},
+
+rppicomidi::Ssd1306::Ssd1306(Ssd1306hw* port_, uint8_t landscape_width_, uint8_t landscape_height_, uint8_t first_column_, uint8_t first_page_)
+    : port{port_}, landscape_width{landscape_width_}, landscape_height{landscape_height_},
   first_column{first_column_}, first_page{first_page_}, num_pages{static_cast<uint8_t>(landscape_height_/8)}, contrast{255}
 {
 }
 
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-get_rotation_constants(uint8_t& remap_cmd, uint8_t& com_dir_cmd, uint8_t& addr_mode)
+void rppicomidi::Ssd1306::get_rotation_constants(uint8_t& remap_cmd, uint8_t& com_dir_cmd, uint8_t& addr_mode)
 {
         switch (rotation) {
         default:
@@ -115,22 +109,18 @@ get_rotation_constants(uint8_t& remap_cmd, uint8_t& com_dir_cmd, uint8_t& addr_m
     }
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-bool rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-write_command_list(const uint8_t* cmd_list, size_t cmd_list_len)
+bool rppicomidi::Ssd1306::write_command_list(const uint8_t* cmd_list, size_t cmd_list_len)
 {
     bool success = true;
     uint8_t nbytes = 0;
     for (int idx=0; success && idx < cmd_list_len; idx+=nbytes) {
         nbytes = cmd_list[idx++];
-        success = HwInterfaceClass::write_command(cmd_list+idx, nbytes);
+        success = port->write_command(cmd_list+idx, nbytes);
     }
     return success;
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-bool rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-init(Display_rotation rotation_)
+bool rppicomidi::Ssd1306::init(Display_rotation rotation_)
 {
     bool success = true;
     rotation = rotation_;
@@ -159,23 +149,19 @@ init(Display_rotation rotation_)
     uint8_t nbytes = 0;
     for (int idx=0; success && idx < sizeof(init_commands); idx+=nbytes) {
         nbytes = init_commands[idx++];
-        success = HwInterfaceClass::write_command(init_commands+idx, nbytes);
+        success = port->write_command(init_commands+idx, nbytes);
     }
     return success;
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-bool rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-set_contrast(uint8_t contrast_)
+bool rppicomidi::Ssd1306::set_contrast(uint8_t contrast_)
 {
     contrast = contrast_;
     uint8_t cmd[] = {SET_CONTRAST, contrast};
-    return HwInterfaceClass::write_command(cmd, sizeof(cmd));
+    return port->write_command(cmd, sizeof(cmd));
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-bool rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-set_display_rotation(rppicomidi::Display_rotation rotation_)
+bool rppicomidi::Ssd1306::set_display_rotation(rppicomidi::Display_rotation rotation_)
 {
     rotation = rotation_;
     uint8_t remap_cmd, com_dir_cmd, addr_mode;
@@ -188,9 +174,7 @@ set_display_rotation(rppicomidi::Display_rotation rotation_)
     return write_command_list(cmd_list, sizeof(cmd_list));
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-bool rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-write_display_mem(const uint8_t* buffer, size_t nbytes, uint8_t col, uint8_t page)
+bool rppicomidi::Ssd1306::write_display_mem(const uint8_t* buffer, size_t nbytes, uint8_t col, uint8_t page)
 {
     assert(buffer);
     assert(nbytes);
@@ -201,23 +185,19 @@ write_display_mem(const uint8_t* buffer, size_t nbytes, uint8_t col, uint8_t pag
     static const uint8_t reset_page_cmd[] = {SET_PAGE_ADDR, page, (uint8_t)((num_pages)-1)};
     bool success = write_command_list(cmd_list, sizeof(cmd_list));
     if (success) {
-        success = HwInterfaceClass::write_data(buffer, nbytes);
+        success = port->write_data(buffer, nbytes);
     }
     return success;
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-bool rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-clear_display_mem()
+bool rppicomidi::Ssd1306::clear_display_mem()
 {
     uint8_t canvas[num_pages * landscape_width];
     memset(canvas, 0, sizeof(canvas));
     return write_display_mem(canvas, sizeof(canvas), first_column, first_page);
 }
 
-template <class HwInterfaceClass, class HwInterfaceClassConstructorArgs, class HwInterfaceInstance>
-void rppicomidi::Ssd1306_common<HwInterfaceClass, HwInterfaceClassConstructorArgs, HwInterfaceInstance>::
-set_pixel_on_canvas(uint8_t* canvas, size_t nbytes_in_canvas, uint8_t x, uint8_t y, Pixel_state value)
+void rppicomidi::Ssd1306::set_pixel_on_canvas(uint8_t* canvas, size_t nbytes_in_canvas, uint8_t x, uint8_t y, Pixel_state value)
 {
     assert(canvas);
     assert(nbytes_in_canvas);
