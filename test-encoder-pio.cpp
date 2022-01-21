@@ -37,13 +37,17 @@ int main()
     //screen.draw_string(font, 0, 0, "Hello!", 6, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ZERO);
     //screen.draw_line(32,32, 32, 127,Pixel_state::PIXEL_ONE);
     //screen.draw_rectangle(10,30, 20, 50, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
-    screen.draw_circle(16,16,32, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
+    screen.draw_centered_circle(32,32, 31, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
+    screen.render();
+    sleep_ms(1000);
+    screen.clear_canvas();
+    screen.set_clip_rect(10, 10, screen.get_screen_width()-10, screen.get_screen_height()-10);
+    screen.draw_centered_circle(32,32, 31, Pixel_state::PIXEL_ONE, Pixel_state::PIXEL_ONE);
+    screen.render();
     #else
     for (uint8_t xy=0; xy<64; xy++)
         screen.draw_dot(xy,xy,Pixel_state::PIXEL_ONE);
     #endif
-    screen.render();
-    printf("screen should say hello!\r\n");
     for (;;) ;
 #if 0
     using namespace pimoroni;

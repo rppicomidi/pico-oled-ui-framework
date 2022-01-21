@@ -35,14 +35,19 @@ rppicomidi::Mono_graphics::Mono_graphics(rppicomidi::Ssd1306* display_, Display_
 {
     canvas_nbytes = display->get_minimum_canvas_size();
     canvas = reinterpret_cast<uint8_t*>(malloc(canvas_nbytes));
-    memset(canvas, 0, canvas_nbytes);
     assert(canvas);
+    clear_canvas();
     display->init(initial_rotation_);
+	set_clip_rect(0, 0, display->get_screen_width()-1, display->get_screen_height()-1);
 }
 
 void rppicomidi::Mono_graphics::draw_dot(uint8_t x, uint8_t y, Pixel_state fg_color)
 {
-    display->set_pixel_on_canvas(canvas, canvas_nbytes, x, y, fg_color);
+	// only draw the dot if x and y are within the clipping rectangle
+	if (x >= clip_rect.x_upper_left && x <= clip_rect.x_lower_right &&
+		y >= clip_rect.y_upper_left && y <= clip_rect.y_lower_right) {
+    	display->set_pixel_on_canvas(canvas, canvas_nbytes, x, y, fg_color);
+	}
 }
 
 void rppicomidi::Mono_graphics::draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, Pixel_state fg_color)
@@ -54,7 +59,7 @@ void rppicomidi::Mono_graphics::draw_line(uint8_t x0, uint8_t y0, uint8_t x1, ui
 	int sy = (y0<y1) ? 1 : -1;
 	int err = dx+dy; // error value e_xy
 	while(true) {
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, x0, y0, fg_color);
+		draw_dot(x0, y0, fg_color);
 		if (x0 == x1 && y0 == y1) {
 			break; //done
 		}
@@ -108,7 +113,7 @@ void rppicomidi::Mono_graphics::draw_character(MonoMonoFont& font, uint8_t x, ui
 		uint8_t ypixel = y;
 		uint8_t column_byte = 0;
 		for (uint8_t row = 0; row < nrows; row++) {
-			display->set_pixel_on_canvas(canvas, canvas_nbytes, xpixel, ypixel, (rowbits & mask)!= 0 ? fg_color : bg_color);
+			draw_dot(xpixel, ypixel, (rowbits & mask)!= 0 ? fg_color : bg_color);
             if (font.msb_is_top)
 			    mask >>= 1;
             else
@@ -131,32 +136,32 @@ void rppicomidi::Mono_graphics::draw_character(MonoMonoFont& font, uint8_t x, ui
 void rppicomidi::Mono_graphics::circle_points(int cx, int cy, int x, int y, Pixel_state fg_color, Pixel_state fill_color)
 {
 	if (x == 0) {
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy + y, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx, cy - y, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy, fg_color);
+		draw_dot(cx, cy + y, fg_color);
+		draw_dot(cx, cy - y, fg_color);
+		draw_dot(cx + y, cy, fg_color);
+		draw_dot(cx - y, cy, fg_color);
 		draw_line(cx-y+1,cy, cx+y-1, cy, fill_color);
 	}
 	else if (x == y) {
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
+		draw_dot(cx + x, cy + y, fg_color);
+		draw_dot(cx - x, cy + y, fg_color);
 		draw_line(cx-x+1,cy+y, cx+x-1, cy+y, fill_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
+		draw_dot(cx + x, cy - y, fg_color);
+		draw_dot(cx - x, cy - y, fg_color);
 		draw_line(cx-x+1,cy-y, cx+x-1, cy-y, fill_color);
 	}
 	else if (x < y) {
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy + y, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy + y, fg_color);
+		draw_dot(cx + x, cy + y, fg_color);
+		draw_dot(cx - x, cy + y, fg_color);
 		draw_line(cx-x+1,cy+y, cx+x-1, cy+y, fill_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + x, cy - y, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - x, cy - y, fg_color);
+		draw_dot(cx + x, cy - y, fg_color);
+		draw_dot(cx - x, cy - y, fg_color);
 		draw_line(cx-x+1,cy-y, cx+x-1, cy-y, fill_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy + x, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy + x, fg_color);
+		draw_dot(cx + y, cy + x, fg_color);
+		draw_dot(cx - y, cy + x, fg_color);
 		draw_line(cx-y+1,cy+x, cx+y-1, cy+x, fill_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx + y, cy - x, fg_color);
-		display->set_pixel_on_canvas(canvas, canvas_nbytes, cx - y, cy - x, fg_color);
+		draw_dot(cx + y, cy - x, fg_color);
+		draw_dot(cx - y, cy - x, fg_color);
 		draw_line(cx-y+1,cy-x, cx+y-1, cy-x, fill_color);
 	}
 }

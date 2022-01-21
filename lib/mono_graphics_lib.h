@@ -36,6 +36,14 @@
 namespace rppicomidi {
 
 /**
+ * @brief define a rectangle by its upper left and lower right coordinates
+ * 
+ */
+struct Rectangle {
+    uint8_t x_upper_left, y_upper_left, x_lower_right, y_lower_right;
+};
+
+/**
  * @brief Monospace Monochrome font
  *
  * MonoMonoFont is designed to display fixed width printable ASCII
@@ -77,6 +85,48 @@ public:
      * @param display the interface to the display
      */
     Mono_graphics(Ssd1306* display_, Display_rotation initial_rotation_);
+
+    /**
+     * @brief Set the clipping rectangle to the rectangle with the upper
+     * left and lower right coordinates
+     */
+    inline void set_clip_rect(uint8_t x_upper_left, uint8_t y_upper_left, uint8_t x_lower_right, uint8_t y_lower_right)
+    {
+        assert(x_upper_left < display->get_screen_width());
+        assert(x_lower_right < display->get_screen_width());
+        assert(y_upper_left < display->get_screen_height());
+        assert(y_lower_right < display->get_screen_height());
+        clip_rect.x_upper_left = x_upper_left;
+	    clip_rect.y_upper_left = y_upper_left;
+	    clip_rect.x_lower_right = x_lower_right;
+	    clip_rect.y_lower_right = y_lower_right;
+    }
+
+    /**
+     * @brief Get the screen height object
+     * 
+     * @return the screen height
+     */
+    inline uint8_t get_screen_height() {
+        return display->get_screen_height();
+    }
+
+    /**
+     * @brief Get the screen width object
+     * 
+     * @return the screen width
+     */
+    inline uint8_t get_screen_width() {
+        return display->get_screen_width();
+    }
+
+    /**
+     * @brief set every byte in the canvas buffer to 0
+     * 
+     */
+    inline void clear_canvas() {
+        memset(canvas, 0, canvas_nbytes);
+    }
 
     /**
      * @brief draw a single dot on the screen at raster coordinates (x,y)
@@ -166,15 +216,26 @@ public:
         }
     }
 
-    inline bool render() {
-        return display->write_display_mem(canvas, canvas_nbytes);
+    /**
+     * @brief write the contents of the canvas buffer to the display memory
+     * 
+     */
+    inline void render() {
+        assert(display->write_display_mem(canvas, canvas_nbytes));
     }
-    Display_rotation get_display_rotation() {return display->get_display_rotation(); }
+
+    /**
+     * @brief Get the display rotation object
+     * 
+     * @return Display_rotation 
+     */
+    inline Display_rotation get_display_rotation() {return display->get_display_rotation(); }
 private:
     Ssd1306* display;
     uint8_t* canvas;
     size_t canvas_nbytes;
     void circle_points(int cx, int cy, int x, int y, Pixel_state bg_color, Pixel_state fill_color);
+    Rectangle clip_rect;
 };
 
 }
