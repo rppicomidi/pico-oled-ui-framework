@@ -125,18 +125,28 @@ public:
     //-----------------------------------------------------------------------------
 
     /**
-     * @brief write a buffer of bytes to the display 
+     * @brief write a buffer of bytes to the display in the rectangle of bytes
+     * defined by (col, page) and (last_col, last_page).
      * 
-     * @param buffer a buffer that represents screen memory
-     * @param nbytes the number of bytes to write
+     * If you have a region of the screen that updates frequently, you may
+     * get better performance if you update only that section of the screen.
+     * @param buffer a buffer that represents the sequential bytes in the
+     * screen rectangle defined by (col, page) and (last_col, last_page).
+     * @param nbytes the number of bytes to write. Must be (last_col-col+1) *
+     * (last_page-page+1).
      * @param col the column of the first byte of the display memory to write
      * @param page the page of the first byte of display memory to write
+     * @param last_col the column of the last byte of the display memory to write.
+     * If it is 0, then it is set to landscape_width-1
+     * @param last_page the page of the last byte of the display memory to write.
+     * If it is 0, then it is set to num_pages-1
      * @return true if the write was successful
      * @return false if the write failed
      * @note to write to the whole display memory, omit row and col parameters
      * and set nbytes to the full display size
      */
-    bool write_display_mem(const uint8_t* buffer, size_t nbytes, uint8_t col = 0, uint8_t page = 0);
+    bool write_display_mem(const uint8_t* buffer, size_t nbytes, 
+        uint8_t col=0, uint8_t page=0, uint8_t last_page=0, uint8_t last_col=0);
 
     /**
      * @brief set every byte of the display memory to 0

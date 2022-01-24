@@ -170,15 +170,20 @@ bool rppicomidi::Ssd1306::set_display_rotation(rppicomidi::Display_rotation rota
     return write_command_list(cmd_list, sizeof(cmd_list));
 }
 
-bool rppicomidi::Ssd1306::write_display_mem(const uint8_t* buffer, size_t nbytes, uint8_t col, uint8_t page)
+bool rppicomidi::Ssd1306::write_display_mem(const uint8_t* buffer, size_t nbytes, uint8_t col, uint8_t page,
+    uint8_t last_page, uint8_t last_col)
 {
     assert(buffer);
     assert(nbytes);
+    if (col == last_col)
+        last_col = static_cast<uint8_t>(landscape_width-1);
+    if (page == last_page)
+        last_page = static_cast<uint8_t>(num_pages - 1);
+
     const uint8_t cmd_list[] = {
-        3, SET_PAGE_ADDR, page, (uint8_t)((num_pages)-1),
-        3, SET_COL_ADDR, col, (uint8_t)(landscape_width-1),
+        3, SET_PAGE_ADDR, page, last_page,
+        3, SET_COL_ADDR, col, last_col,
     };
-    static const uint8_t reset_page_cmd[] = {SET_PAGE_ADDR, page, (uint8_t)((num_pages)-1)};
     bool success = write_command_list(cmd_list, sizeof(cmd_list));
     if (success) {
         success = port->write_data(buffer, nbytes);
