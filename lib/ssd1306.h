@@ -96,15 +96,29 @@ enum class Pixel_state {
 class Ssd1306 {
 public:
     /**
+     * @enum class Com_pin_cfg defines the value for the COM PIN CFG
+     * command 0xDA. See the SSD1309 datasheet and comments below
+     */
+    enum class Com_pin_cfg {
+        SEQ_DIS=0x02, /* one 128x32 display uses this. sequential COM pin configuration & disable COM Left/Right Remp */
+        ALT_DIS=0x12, /* one 128x64 display uses this. alternate COM pin configuration & disable COM Left/Right Remp */
+        SEQ_EN=0x22,  /* sequential COM pin configuration & enable COM Left/Right Remp */
+        ALT_EN=0x32,  /* alternate COM pin configuration & enable COM Left/Right Remp */
+    };
+
+    /**
      * @brief Construct a new Ssd1306_common object
      * 
      * @param port_ The physicial interface for writing commands and data
+     * @param com_pin_config the COM pin configuration; see enum class Com_pin_cfg
      * @param landscape_x_max_ the number of horizontal pixels if the screen is in landscape mode
      * @param landscape_y_max_ the number of vertical pixels if the screen is in landscape mode
      * @param first_column_ the first display RAM column number for a non-rotated display
      * @param first_page_  the first display RAM page number for a non-rotated display
      */
-    Ssd1306(Ssd1306hw* port_, uint8_t landscape_x_max_ = 128, uint8_t landscape_y_max_=64, uint8_t first_column_=0, uint8_t first_page_=0);
+    Ssd1306(Ssd1306hw* port_, Com_pin_cfg com_pin_config=Com_pin_cfg::ALT_DIS, 
+            uint8_t landscape_x_max_ = 128, uint8_t landscape_y_max_=64,
+            uint8_t first_column_=0, uint8_t first_page_=0);
 
     //-----------------------------------------------------------------------------
     // Class API interface functions
@@ -203,8 +217,9 @@ public:
     inline uint8_t get_screen_height() {return is_portrait?landscape_width:landscape_height; }
 
     inline size_t get_minimum_canvas_size() {return num_pages * landscape_width; }
-private:
+protected: // protected and not private because you may want to base SH1106 on this class
     Ssd1306hw* port;
+    Com_pin_cfg com_pin_cfg;
     uint8_t landscape_width;
     uint8_t landscape_height;
     uint8_t first_column;

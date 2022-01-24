@@ -24,7 +24,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 #include "ssd1306.h"
 #include "assert.h"
 // From the SSD1306 datasheet
@@ -33,6 +32,7 @@
 #define ADDR_MODE_VERTICAL   1
 #define ADDR_MODE_PAGE       2
 
+// Only for horizontal or vertical mode
 #define SET_COL_ADDR 0x21   /* follow this byte by 2 bytes: the 1st column number & the last column number (0-127)*/
 #define SET_PAGE_ADDR 0x22  /* follow this byte by 2 bytes: the 1st page number & the last page number (0-7)*/
 
@@ -52,10 +52,6 @@
 #define SET_DISP_OFFSET 0xD3 /* follow this command by one byte: the vertical shift of the display, 0-63 */
 
 #define SET_COM_PIN_CFG 0xDA /* follow this command by one byte described by one of the combinations below */
-#define COM_PIN_CFG_SEQ_DIS 0x02 /* sequential COM pin configuration & disable COM Left/Right Remp */
-#define COM_PIN_CFG_ALT_DIS 0x12 /* alternate COM pin configuration & disable COM Left/Right Remp */
-#define COM_PIN_CFG_SEQ_EN 0x22  /* sequential COM pin configuration & enable COM Left/Right Remp */
-#define COM_PIN_CFG_ALT_EN 0x32  /* alternate COM pin configuration & enable COM Left/Right Remp */
 
 #define SET_DISP_CLK_DIV_FREQ 0xD5   /* follow this command by one byte described by the macro below */
 /*divider is the divide ratio-1; frequency is the osc frequency */
@@ -71,8 +67,8 @@
 #define CHARGE_PUMP_CTRL(enable) ((enable)?0x14:0x10)
 
 
-rppicomidi::Ssd1306::Ssd1306(Ssd1306hw* port_, uint8_t landscape_width_, uint8_t landscape_height_, uint8_t first_column_, uint8_t first_page_)
-    : port{port_}, landscape_width{landscape_width_}, landscape_height{landscape_height_},
+rppicomidi::Ssd1306::Ssd1306(Ssd1306hw* port_, Com_pin_cfg com_pin_cfg_, uint8_t landscape_width_, uint8_t landscape_height_, uint8_t first_column_, uint8_t first_page_)
+    : port{port_}, com_pin_cfg{com_pin_cfg_}, landscape_width{landscape_width_}, landscape_height{landscape_height_},
   first_column{first_column_}, first_page{first_page_}, num_pages{static_cast<uint8_t>(landscape_height_/8)}, contrast{255}
 {
 }
@@ -138,7 +134,7 @@ bool rppicomidi::Ssd1306::init(Display_rotation rotation_)
         2, SET_DISP_OFFSET, 0,
         2, SET_DISP_CLK_DIV_FREQ, DISP_CLK_DIV_FREQ(0,8),
         2, SET_PRECHARGE, PRECHARGE_PERIOD(2,2),
-        2, SET_COM_PIN_CFG, COM_PIN_CFG_ALT_DIS,
+        2, SET_COM_PIN_CFG, static_cast<uint8_t>(com_pin_cfg),
         2, SET_VCOM_DESEL, VCOM_DESEL(4),
         2, SET_CONTRAST, contrast,
         1, SET_DISP_NORM,
