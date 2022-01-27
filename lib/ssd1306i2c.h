@@ -1,9 +1,8 @@
 /**
- * @file i2c_ssd1306.h
+ * @file ssd1306i2c.h
  * @brief This class implements I2C communication between the Raspberry Pi
- *  RP2040 chipand the SSD1306. It is inteded to operate as a template class
- *  argument
- * 
+ *  RP2040 chip and the SSD1306.
+ *
  * This class is a C++ Raspberry Pi Pico port of the LibDriver 
  * C SSD1306 driver code found here: https://github.com/hepingood/ssd1306
  * Functions copied based on the Raspberry Pi Pico SDK are noted in the
