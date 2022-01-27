@@ -19,6 +19,7 @@ pico_enable_stdio_uart(test_encoder_pio 1)
 
 target_include_directories(test_encoder_pio PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-target_link_libraries(test_encoder_pio encoder-pio ssd1306i2c ssd1306 mono_graphics_lib pico_stdlib)
+target_link_libraries(test_encoder_pio encoder-pio ssd1306i2c ssd1306pioi2c
+        ssd1306 mono_graphics_lib button_led vpot_display mc_meter mc_channel_text pico_stdlib)
 
 pico_add_extra_outputs(test_encoder_pio)
