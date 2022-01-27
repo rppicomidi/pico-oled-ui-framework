@@ -95,7 +95,7 @@ void rppicomidi::Mono_graphics::draw_rectangle(uint8_t x0, uint8_t y0, uint8_t w
 	}
 }
 
-void rppicomidi::Mono_graphics::draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state fg_color, Pixel_state bg_color)
+void rppicomidi::Mono_graphics::draw_character(const MonoMonoFont& font, uint8_t x, uint8_t y, char chr,  Pixel_state fg_color, Pixel_state bg_color)
 {
 	assert(chr <= font.last_char && chr >= font.first_char);
 

@@ -194,7 +194,7 @@ public:
      * @param bg_color how to render the "0" pixels of the font bitmap
      * @return true if successful, false otherwise
      */
-    void draw_character(MonoMonoFont& font, uint8_t x, uint8_t y, char chr, Pixel_state fg_color, Pixel_state bg_color);
+    void draw_character(const MonoMonoFont& font, uint8_t x, uint8_t y, char chr, Pixel_state fg_color, Pixel_state bg_color);
 
     /**
      * @brief draw a single character to the screen based on the pixel_state.
@@ -208,7 +208,7 @@ public:
      * @param bg_color how to render the "0" pixels of the font bitmap
      * @return true if successful, false otherwise
      */
-    void draw_string(MonoMonoFont& font, uint8_t x, uint8_t y, const char* str, size_t len, Pixel_state fg_color, Pixel_state bg_color) {
+    void draw_string(const MonoMonoFont& font, uint8_t x, uint8_t y, const char* str, size_t len, Pixel_state fg_color, Pixel_state bg_color) {
         assert(strlen(str) <= len);
         while (len--) {
             draw_character(font, x, y, *str++, fg_color, bg_color);
