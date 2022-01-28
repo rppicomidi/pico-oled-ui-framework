@@ -20,10 +20,12 @@ of MIDI boxes in mind that would benefit from a display.
 
 # Current status
 The SSD1306 driver manages the display and supports screen rotation of 0, 90, 180 and 270
-degrees. The mono graphics driver supports points, lines, boxes (filled or not),
-and text with multiple fonts. I am experimenting with C++ template static polymorphism here.
-Not sure if I will keep it. Makes the code very verbose. If it saves enough space
-in memory I will. Otherwise, I will go to regular C++ polymorphism.
+degrees. I have tested this with a 128 x 64 oled and a 128 x 32 oled. The mono graphics driver 
+supports points, lines, boxes (filled or not), and text with multiple fonts. I discarded
+C++ template static polymorphism and reverted to regular C++ Vtable polymorphism. It
+was much less painful to code.
 
-The MVC part is not started yet. Still under a lot of development. Because
-the displays can use I2C, PIO-based-I2C, SPI, etc.
+Physcial interfaces supported now are RP2040 I2C and RP2040 PIO-based I2C.
+
+The MVC part is not started yet. Turns out creating graphics screens is fun.
+Still under a lot of development.
