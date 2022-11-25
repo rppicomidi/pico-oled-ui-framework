@@ -1,3 +1,25 @@
+# Superseded
+The code from this project is abandonded. I have actually put together a framework
+for doing this, but it is in several different repositories. I didn't write all of them.
+- [pico-ssd1306-mono-graphics-lib](https://github.com/rppicomidi/pico-ssd1306-mono-graphics-lib) :
+The low level SSD1306 OLED engine
+- [pico-mono-ui-lib](https://github.com/rppicomidi/pico-mono-ui-lib) : the UI library with View,
+Menu classes and JSON serializable settings
+- [parson](https://github.com/kgabis/parson) : handles JSON serialization and deserialization
+- [pico-littlefs](https://github.com/rppicomidi/littlefs-lib) (fork) : handles local setting storage in
+program flash.
+- [EmbeddedCli](https://github.com/funbiscuit/embedded-cli) : helps with testing and debugging
+- [elm-chan FatFs](http://elm-chan.org/fsw/ff/00index_e.html) : provides a FAT filesystem for
+use with projects that have a USB host port; allows you to backup and restore settings from
+the program flash to an external USB flash drive.
+- [tinyusb](https://github.com/hathach/tinyusb) : provides USB Host code and MSC code for
+external flash drives. It is more up-to-date than the tinyusb code provided with the
+[pico-sdk](https://github.com/raspberrypi/pico-sdk).
+
+See the project [pico-usb-midi-processor](https://github.com/rppicomidi/pico-usb-midi-processor)
+for a sample project that uses this framwork. In particular, you will need files in the `lib`
+directory of that project for character fonts. 
+
 # pico-oled-ui-framework
 A small  SSD1306 based OLED display UI framework (C++) for Raspberry Pi Pico
 
